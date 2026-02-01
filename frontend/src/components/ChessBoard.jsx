@@ -554,6 +554,10 @@ export default function ChessBoard() {
                 className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
               />
             </div>
+            <div className="flex items-center gap-2">
+              <label className="text-gray-700 text-xs font-medium">Phase:</label>
+              <span className="text-sm font-semibold capitalize text-gray-800">{gamePhase}</span>
+            </div>
           </div>
           <h1 className="text-2xl md:text-3xl font-bold text-gray-800 absolute left-1/2 transform -translate-x-1/2">
             Chess Coach
@@ -682,10 +686,6 @@ export default function ChessBoard() {
               {/* Keyboard shortcut hint */}
               <div className="text-[10px] text-gray-500 text-center">
                 💡 Tip: Press <kbd className="px-1 py-0.5 bg-gray-200 border border-gray-300 rounded text-gray-700 font-mono">Ctrl+Z</kbd> (or <kbd className="px-1 py-0.5 bg-gray-200 border border-gray-300 rounded text-gray-700 font-mono">⌘Z</kbd> on Mac) to undo
-              </div>
-  
-              <div className="text-xs text-gray-600">
-                <p>Phase: <span className="font-semibold capitalize">{gamePhase}</span></p>
               </div>
             </div>
           </div>
