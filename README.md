@@ -10,9 +10,12 @@ An AI-powered chess coaching application that provides real-time feedback on you
 ## ✨ Features
 
 - **Real-time Move Analysis**: Enter moves in algebraic notation and receive instant AI coaching feedback
+- **AI Chat Assistant**: Ask follow-up questions about coaching, positions, and chess concepts
 - **Multi-Move Mode**: Make multiple moves before getting coaching - perfect for practicing sequences
 - **Interactive Board**: Click pieces to make moves and learn notation visually
 - **Undo Moves**: Quickly fix mistakes with ↩️ Undo button or Ctrl+Z / ⌘Z keyboard shortcut
+- **Dynamic Turn Indicators**: Visual turn indicators positioned beside the active player's side
+- **Resizable Layout**: Drag separator between coaching and chat sections to customize view
 - **One-Command Startup**: Automated scripts handle all setup (`./start.sh` or `start.bat`)
 - **Adaptive Coaching**: Adjust coaching intensity (low, medium, high) based on your needs
 - **ELO-based Guidance**: Tailored advice appropriate to your skill level (default 800 ELO)
@@ -134,20 +137,27 @@ http://localhost:5173
    - Click pieces to see green indicators for legal moves
    - After moving, see "✓ You just played: **e4**" to learn notation
    - Coordinate labels (a1-h8) visible on every square
-4. **Multi-Move Mode** (NEW!):
+   - Turn indicators show whose turn it is (positioned beside the board)
+4. **Ask Questions** (NEW!):
+   - Use the chat interface to ask follow-up questions
+   - Get context-aware answers about your position
+   - Ask "Why was e4 good?" or "What should I focus on?"
+   - Resizable chat section - drag separator to adjust
+5. **Multi-Move Mode**:
    - Toggle **"Multi-Move: OFF"** → **"🎯 Multi-Move: ON"** (purple button)
    - Make multiple moves without coaching interruption
    - Perfect for practicing openings or exploring variations
    - Click **"Get Coaching (3)"** when ready for AI analysis
    - Counter shows how many moves you've made
-5. **Undo mistakes:** 
+6. **Undo mistakes:** 
    - Click the **↩️ Undo** button
    - Or press **Ctrl+Z** (Windows/Linux) or **⌘Z** (Mac)
    - Works in both single-move and multi-move modes
-6. **Get AI coaching:**
+7. **Get AI coaching:**
    - In single-move mode: Instant feedback after each move
    - In multi-move mode: Click "Get Coaching" when ready
-   - Adjust coaching intensity and your ELO rating
+   - Adjust coaching intensity in the feedback section header
+   - Set your ELO rating in the top-left header
    - Learn opening principles, tactics, and strategy
 
 ### Move Notation Reference:
@@ -213,6 +223,7 @@ chess-coach/
 | POST | `/api/game/new` | Start a new game |
 | POST | `/api/game/move` | Make a move and get coaching |
 | POST | `/api/game/undo` | Undo the last move |
+| POST | `/api/game/chat` | Ask follow-up questions about coaching/position |
 | POST | `/api/game/batch-moves` | Submit multiple moves at once |
 | GET | `/api/game/state` | Get current board state |
 | POST | `/api/game/save` | Save completed game |
@@ -221,7 +232,18 @@ chess-coach/
 
 ## 🎨 Recent Updates
 
-### v1.2.1 (Latest)
+### v1.3.0 (Latest)
+- ✅ **AI Chat Assistant** - Ask follow-up questions about coaching and positions
+- ✅ Context-aware responses based on current game state
+- ✅ ELO-appropriate explanations and terminology
+- ✅ **Resizable UI** - Drag separator between coaching and chat sections
+- ✅ **Dynamic Turn Indicators** - Visual indicators positioned beside active player
+- ✅ **Improved Layout** - New Game and ELO in top header
+- ✅ **Larger Board** - Increased from 512px to 640px for better visibility
+- ✅ Coaching intensity control in feedback section header
+- ✅ Cleaner, more organized UI with better space utilization
+
+### v1.2.1
 - ✅ **One-Command Startup** - Automated scripts for easy development (`./start.sh` or `start.bat`)
 - ✅ Auto-creates virtual environment on first run
 - ✅ Auto-installs all dependencies
