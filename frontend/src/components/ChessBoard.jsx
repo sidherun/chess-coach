@@ -185,8 +185,6 @@ export default function ChessBoard() {
     setProcessingSquare(move.to);
     setFeedback('🤔 Getting coaching...');
     
-    console.log('🎯 Processing move - square:', move.to, 'piece moved to:', move.to);
-    
     // Fetch coaching in background
     try {
       const response = await axios.post(`${API_BASE_URL}/move`, {
@@ -498,8 +496,6 @@ export default function ChessBoard() {
     setProcessingMove(true);
     setProcessingSquare(toSquare);
     setFeedback('🤔 Getting coaching...');
-    
-    console.log('🎯 Processing move from board click - square:', toSquare);
     
     // Fetch coaching in background
     try {

@@ -9,11 +9,6 @@ export default function SimpleChessBoard({ fen, onSquareClick, selectedSquare, l
   const game = new Chess(fen);
   const board = game.board();
   
-  // Debug log
-  if (processingSquare) {
-    console.log('🔍 SimpleChessBoard received processingSquare:', processingSquare);
-  }
-  
   const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
   const ranks = ['8', '7', '6', '5', '4', '3', '2', '1'];
   
@@ -33,11 +28,6 @@ export default function SimpleChessBoard({ fen, onSquareClick, selectedSquare, l
             const isLastMoveFrom = squareName === lastMoveFrom;
             const isLastMoveTo = squareName === lastMoveTo;
             const isProcessing = squareName === processingSquare;
-            
-            // Debug log for processing
-            if (isProcessing) {
-              console.log('✨ Square is processing:', squareName);
-            }
             
             // Build highlight classes
             let highlightClass = '';
