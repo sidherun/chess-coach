@@ -9,6 +9,11 @@ export default function SimpleChessBoard({ fen, onSquareClick, selectedSquare, l
   const game = new Chess(fen);
   const board = game.board();
   
+  // Debug log
+  if (processingSquare) {
+    console.log('🔍 SimpleChessBoard received processingSquare:', processingSquare);
+  }
+  
   const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
   const ranks = ['8', '7', '6', '5', '4', '3', '2', '1'];
   
@@ -28,6 +33,11 @@ export default function SimpleChessBoard({ fen, onSquareClick, selectedSquare, l
             const isLastMoveFrom = squareName === lastMoveFrom;
             const isLastMoveTo = squareName === lastMoveTo;
             const isProcessing = squareName === processingSquare;
+            
+            // Debug log for processing
+            if (isProcessing) {
+              console.log('✨ Square is processing:', squareName);
+            }
             
             // Build highlight classes
             let highlightClass = '';
@@ -55,19 +65,25 @@ export default function SimpleChessBoard({ fen, onSquareClick, selectedSquare, l
                 
                 {/* Piece */}
                 {square && (
-                  <span 
-                    className={`font-bold absolute z-20 transition-all duration-300 ${
-                      isProcessing ? 'opacity-50 animate-pulse' : ''
-                    }`}
-                    style={{
-                      color: square.color === 'w' ? '#ffffff' : '#000000',
-                      textShadow: square.color === 'w' 
-                        ? '0 0 4px #000, 0 0 8px #000, 0 2px 4px rgba(0,0,0,0.9), 2px 2px 0px #000, -2px -2px 0px #000'
-                        : '0 0 3px #fff, 0 0 6px #fff, 0 1px 2px rgba(255,255,255,0.8), 1px 1px 0px #fff, -1px -1px 0px #fff'
-                    }}
-                  >
-                    {square.color === 'w' ? pieceSymbols[square.type.toUpperCase()] : pieceSymbols[square.type]}
-                  </span>
+                  <>
+                    <span 
+                      className={`font-bold absolute z-20 transition-all duration-300 ${
+                        isProcessing ? 'opacity-30 animate-pulse' : ''
+                      }`}
+                      style={{
+                        color: square.color === 'w' ? '#ffffff' : '#000000',
+                        textShadow: square.color === 'w' 
+                          ? '0 0 4px #000, 0 0 8px #000, 0 2px 4px rgba(0,0,0,0.9), 2px 2px 0px #000, -2px -2px 0px #000'
+                          : '0 0 3px #fff, 0 0 6px #fff, 0 1px 2px rgba(255,255,255,0.8), 1px 1px 0px #fff, -1px -1px 0px #fff'
+                      }}
+                    >
+                      {square.color === 'w' ? pieceSymbols[square.type.toUpperCase()] : pieceSymbols[square.type]}
+                    </span>
+                    {/* Processing overlay */}
+                    {isProcessing && (
+                      <div className="absolute inset-0 bg-gray-500 opacity-40 z-15 animate-pulse"></div>
+                    )}
+                  </>
                 )}
                 
                 {/* Square coordinate label - always visible */}
