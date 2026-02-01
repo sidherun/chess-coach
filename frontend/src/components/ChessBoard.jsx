@@ -152,13 +152,22 @@ export default function ChessBoard() {
       setBoardKey(Date.now());
       
       const undoneMove = moveHistory[moveHistory.length - 1];
-      setMoveHistory(moveHistory.slice(0, -1));
+      const newHistory = moveHistory.slice(0, -1);
+      setMoveHistory(newHistory);
       
-      setLastMoveFrom(null);
-      setLastMoveTo(null);
-      setLastMoveNotation('');
+      // Update highlighting to show previous move (if any)
+      if (newHistory.length > 0) {
+        const prevMove = newHistory[newHistory.length - 1];
+        setLastMoveFrom(prevMove.from);
+        setLastMoveTo(prevMove.to);
+        setLastMoveNotation(prevMove.notation);
+      } else {
+        setLastMoveFrom(null);
+        setLastMoveTo(null);
+        setLastMoveNotation('');
+      }
       
-      setFeedback(`↩️ Undid move: ${undoneMove.notation} (${moveHistory.length - 1} move${moveHistory.length - 1 !== 1 ? 's' : ''} remaining)`);
+      setFeedback(`↩️ Undid move: ${undoneMove.notation} (${newHistory.length} move${newHistory.length !== 1 ? 's' : ''} remaining)`);
       setLoading(false);
       return;
     }
