@@ -464,29 +464,60 @@ export default function ChessBoard() {
           {/* Left Side - Chess Board */}
           <div className="bg-white p-4 rounded-lg shadow-lg flex flex-col items-center overflow-y-auto">
             <div className="mb-4 w-full flex justify-center">
-              <div className="flex flex-col items-center gap-2">
-                <SimpleChessBoard 
-                  fen={boardPosition} 
-                  onSquareClick={handleSquareClick}
-                  selectedSquare={selectedSquare}
-                  legalMoves={legalMoves}
-                  lastMoveFrom={lastMoveFrom}
-                  lastMoveTo={lastMoveTo}
-                />
-                {lastMoveNotation && (
-                  <div className="bg-green-100 border-2 border-green-400 px-4 py-2 rounded-lg shadow-md">
-                    <span className="text-sm font-semibold text-green-800">
-                      ✓ You just played: <span className="font-mono text-xl text-green-900">{lastMoveNotation}</span>
-                    </span>
+              {/* Board with turn indicators on sides */}
+              <div className="flex items-center gap-4">
+                {/* Turn indicator - positioned next to board */}
+                <div className="flex flex-col justify-center h-[512px]">
+                  {/* Black's turn indicator (top) */}
+                  <div className={`mb-auto transition-all duration-300 ${
+                    game.turn() === 'b' 
+                      ? 'opacity-100 scale-100' 
+                      : 'opacity-0 scale-95'
+                  }`}>
+                    <div className="bg-gray-800 text-white px-3 py-2 rounded-lg shadow-lg border-2 border-gray-600">
+                      <div className="text-xs font-semibold">Black's Turn</div>
+                      <div className="text-2xl">⚫</div>
+                    </div>
                   </div>
-                )}
-                {selectedSquare && legalMoves.length > 0 && (
-                  <div className="bg-blue-100 border-2 border-blue-400 px-4 py-2 rounded-lg">
-                    <span className="text-xs text-blue-700">
-                      💡 Click a green circle to move • {legalMoves.length} legal move{legalMoves.length !== 1 ? 's' : ''}
-                    </span>
+                  
+                  {/* White's turn indicator (bottom) */}
+                  <div className={`mt-auto transition-all duration-300 ${
+                    game.turn() === 'w' 
+                      ? 'opacity-100 scale-100' 
+                      : 'opacity-0 scale-95'
+                  }`}>
+                    <div className="bg-white text-gray-800 px-3 py-2 rounded-lg shadow-lg border-2 border-gray-300">
+                      <div className="text-xs font-semibold">White's Turn</div>
+                      <div className="text-2xl">⚪</div>
+                    </div>
                   </div>
-                )}
+                </div>
+
+                {/* Board and badges */}
+                <div className="flex flex-col items-center gap-2">
+                  <SimpleChessBoard 
+                    fen={boardPosition} 
+                    onSquareClick={handleSquareClick}
+                    selectedSquare={selectedSquare}
+                    legalMoves={legalMoves}
+                    lastMoveFrom={lastMoveFrom}
+                    lastMoveTo={lastMoveTo}
+                  />
+                  {lastMoveNotation && (
+                    <div className="bg-green-100 border-2 border-green-400 px-4 py-2 rounded-lg shadow-md">
+                      <span className="text-sm font-semibold text-green-800">
+                        ✓ You just played: <span className="font-mono text-xl text-green-900">{lastMoveNotation}</span>
+                      </span>
+                    </div>
+                  )}
+                  {selectedSquare && legalMoves.length > 0 && (
+                    <div className="bg-blue-100 border-2 border-blue-400 px-4 py-2 rounded-lg">
+                      <span className="text-xs text-blue-700">
+                        💡 Click a green circle to move • {legalMoves.length} legal move{legalMoves.length !== 1 ? 's' : ''}
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
   
@@ -581,9 +612,8 @@ export default function ChessBoard() {
                 </div>
               </div>
   
-              <div className="text-xs text-gray-600 space-y-1">
+              <div className="text-xs text-gray-600">
                 <p>Phase: <span className="font-semibold capitalize">{gamePhase}</span></p>
-                <p>Turn: <span className="font-semibold capitalize">{game.turn() === 'w' ? 'White' : 'Black'}</span></p>
               </div>
             </div>
           </div>
