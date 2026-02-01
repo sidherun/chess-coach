@@ -16,6 +16,11 @@ export default function ChessBoard() {
   const [playerElo, setPlayerElo] = useState(800);
   const [coachingIntensity, setCoachingIntensity] = useState('medium');
   const [lastMove, setLastMove] = useState(null); // Track last move for highlighting
+  const [lastMoveFrom, setLastMoveFrom] = useState(null); // From square (e.g., "e2")
+  const [lastMoveTo, setLastMoveTo] = useState(null); // To square (e.g., "e4")
+  const [lastMoveNotation, setLastMoveNotation] = useState(''); // Move notation (e.g., "e4")
+  const [selectedSquare, setSelectedSquare] = useState(null); // Currently selected square
+  const [legalMoves, setLegalMoves] = useState([]); // Legal destination squares
   const inputRef = useRef(null); // Reference for the input field
 
   // Auto-start a new game when component mounts
@@ -61,6 +66,21 @@ export default function ChessBoard() {
         // Get FEN from backend
         const newFen = response.data.board_state.fen;
         
+        // Parse the move to get from/to squares
+        // The move from backend is in SAN format (e.g., "Nf3", "e4")
+        // We need to use chess.js to get the actual squares
+        const tempGame = new Chess(game.fen()); // Use current position
+        try {
+          const move = tempGame.move(moveInput); // This gives us {from, to, san}
+          if (move) {
+            setLastMoveFrom(move.from);
+            setLastMoveTo(move.to);
+            setLastMoveNotation(move.san);
+          }
+        } catch (e) {
+          console.log('Could not parse move for highlighting:', e);
+        }
+        
         // Update game state and board position
         const newGame = new Chess(newFen);
         setGame(newGame);
@@ -91,6 +111,85 @@ export default function ChessBoard() {
     }
   };
 
+  const handleSquareClick = (square) => {
+    // If no square selected, select this square (if it has a piece of current turn)
+    if (!selectedSquare) {
+      const piece = game.get(square);
+      if (piece && piece.color === game.turn()) {
+        setSelectedSquare(square);
+        // Get legal moves for this piece
+        const moves = game.moves({ square, verbose: true });
+        setLegalMoves(moves.map(m => m.to));
+      }
+    } else {
+      // A square is already selected, try to move there
+      if (legalMoves.includes(square)) {
+        // This is a legal move, make it!
+        // Create temp game to get the move notation without mutating state
+        const tempGame = new Chess(game.fen());
+        const moveObj = tempGame.move({ from: selectedSquare, to: square });
+        if (moveObj) {
+          // Send to backend with the SAN notation
+          makeMoveFromBoard(moveObj.san, moveObj.from, moveObj.to);
+        }
+      } else {
+        // Not a legal move, maybe selecting a different piece?
+        const piece = game.get(square);
+        if (piece && piece.color === game.turn()) {
+          setSelectedSquare(square);
+          const moves = game.moves({ square, verbose: true });
+          setLegalMoves(moves.map(m => m.to));
+        } else {
+          // Clear selection
+          setSelectedSquare(null);
+          setLegalMoves([]);
+        }
+      }
+    }
+  };
+
+  const makeMoveFromBoard = async (moveNotation, fromSquare, toSquare) => {
+    setLoading(true);
+    setSelectedSquare(null);
+    setLegalMoves([]);
+    
+    try {
+      const response = await axios.post(`${API_BASE_URL}/move`, {
+        move: moveNotation,
+        player_elo: playerElo,
+        coaching_intensity: coachingIntensity
+      });
+
+      if (response.data.success) {
+        const newFen = response.data.board_state.fen;
+        
+        // Set the from/to squares for highlighting
+        setLastMoveFrom(fromSquare);
+        setLastMoveTo(toSquare);
+        setLastMoveNotation(moveNotation);
+        
+        // Update game state
+        const newGame = new Chess(newFen);
+        setGame(newGame);
+        setBoardPosition(newFen);
+        setBoardKey(Date.now());
+        
+        setFeedback(response.data.coaching_feedback);
+        setGamePhase(response.data.game_phase);
+        
+        console.log('Board updated to:', newFen);
+        console.log('Move made:', moveNotation);
+      } else {
+        setFeedback(`Invalid move: ${response.data.error}`);
+      }
+    } catch (error) {
+      console.error('Error making move:', error);
+      setFeedback('Error making move. Check the console for details.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="h-screen bg-gray-100 p-4 overflow-hidden flex flex-col">
       <div className="w-full h-full flex flex-col">
@@ -102,7 +201,30 @@ export default function ChessBoard() {
           {/* Left Side - Chess Board */}
           <div className="bg-white p-4 rounded-lg shadow-lg flex flex-col items-center justify-start">
             <div className="mb-4 w-full flex justify-center">
-              <SimpleChessBoard fen={boardPosition} />
+              <div className="flex flex-col items-center gap-2">
+                <SimpleChessBoard 
+                  fen={boardPosition} 
+                  onSquareClick={handleSquareClick}
+                  selectedSquare={selectedSquare}
+                  legalMoves={legalMoves}
+                  lastMoveFrom={lastMoveFrom}
+                  lastMoveTo={lastMoveTo}
+                />
+                {lastMoveNotation && (
+                  <div className="bg-green-100 border-2 border-green-400 px-4 py-2 rounded-lg shadow-md">
+                    <span className="text-sm font-semibold text-green-800">
+                      ✓ You just played: <span className="font-mono text-xl text-green-900">{lastMoveNotation}</span>
+                    </span>
+                  </div>
+                )}
+                {selectedSquare && legalMoves.length > 0 && (
+                  <div className="bg-blue-100 border-2 border-blue-400 px-4 py-2 rounded-lg">
+                    <span className="text-xs text-blue-700">
+                      💡 Click a green circle to move • {legalMoves.length} legal move{legalMoves.length !== 1 ? 's' : ''}
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
   
             <div className="space-y-2 w-full" style={{ maxWidth: 'min(90%, 500px)' }}>
