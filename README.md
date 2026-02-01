@@ -1,149 +1,230 @@
 # Chess Coach
 
-An AI-powered chess coaching application that provides real-time feedback on your moves using Claude AI.
+An AI-powered chess coaching application that provides real-time feedback on your moves using Claude AI. Built with a custom chess board component, responsive design, and intelligent move analysis.
 
-## Features
+![Chess Coach](https://img.shields.io/badge/AI-Claude%20Sonnet%204-blue)
+![Python](https://img.shields.io/badge/Python-3.8+-green)
+![React](https://img.shields.io/badge/React-19.2-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
 
-- **Real-time Move Analysis**: Enter moves in algebraic notation and receive instant coaching feedback
+## ✨ Features
+
+- **Real-time Move Analysis**: Enter moves in algebraic notation and receive instant AI coaching feedback
 - **Adaptive Coaching**: Adjust coaching intensity (low, medium, high) based on your needs
 - **ELO-based Guidance**: Tailored advice appropriate to your skill level (default 800 ELO)
 - **Game Phase Awareness**: Different coaching strategies for opening, middlegame, and endgame
-- **Beautiful UI**: Responsive design that works on laptop and external monitors
-- **Game History**: Save and review your games
+- **Custom Chess Board**: Professional design with clear, high-contrast pieces (lichess.org color scheme)
+- **Auto-Focus Input**: Cursor automatically ready after each move for rapid play
+- **Responsive Design**: Works seamlessly on laptop screens and external monitors
+- **Game History**: Save and review your games with move tracking
+- **Move Validation**: Helpful error messages with capture notation tips
 
-## Tech Stack
-
-### Backend
-- Python 3.8+
-- Flask (REST API)
-- python-chess (chess logic)
-- Anthropic Claude API (AI coaching)
-- SQLAlchemy (game storage)
-
-### Frontend
-- React 19
-- Vite
-- Tailwind CSS
-- Axios
-- chess.js
-
-## Setup Instructions
+## 🎮 Quick Start
 
 ### Prerequisites
 - Python 3.8 or higher
 - Node.js 18 or higher
 - Anthropic API key ([get one here](https://console.anthropic.com/))
 
-### Backend Setup
+### Installation
 
-1. Navigate to the backend directory:
+**1. Clone the repository:**
+```bash
+git clone https://github.com/sidherun/chess-coach.git
+cd chess-coach
+```
+
+**2. Backend Setup:**
 ```bash
 cd backend
-```
 
-2. Create a virtual environment:
-```bash
+# Create virtual environment
 python3 -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
 
-3. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
+# Install dependencies
+pip3 install -r requirements.txt
 
-4. Create a `.env` file in the backend directory:
-```bash
-ANTHROPIC_API_KEY=your_api_key_here
-PORT=5001
-```
+# Create .env file
+echo "ANTHROPIC_API_KEY=your_api_key_here" > .env
+echo "PORT=5001" >> .env
 
-5. Run the backend server:
-```bash
+# Run backend
 python run.py
 ```
 
-The backend will start on `http://localhost:5001`
-
-### Frontend Setup
-
-1. Navigate to the frontend directory:
+**3. Frontend Setup (in new terminal):**
 ```bash
 cd frontend
-```
 
-2. Install dependencies:
-```bash
+# Install dependencies
 npm install
-```
 
-3. Start the development server:
-```bash
+# Start dev server
 npm run dev
 ```
 
-The frontend will start on `http://localhost:5173`
+**4. Open your browser:**
+```
+http://localhost:5173
+```
 
-## Usage
+## 🎯 How to Play
 
-1. Open your browser to `http://localhost:5173`
-2. The game will auto-start with a new board
-3. Enter moves in algebraic notation (e.g., `e4`, `Nf3`, `Bxf7+`)
-4. Click "Move" or press Enter
-5. Receive coaching feedback from Claude AI
-6. Adjust your ELO and coaching intensity as needed
+1. The game auto-starts when you open the app
+2. Enter moves in algebraic notation:
+   - **Pawn moves**: `e4`, `d5`, `c3`
+   - **Piece moves**: `Nf3`, `Bc4`, `Qh5`
+   - **Captures**: `exd5`, `Nxe5`, `Bxf7`
+   - **Castling**: `O-O` (kingside), `O-O-O` (queenside)
+   - **Check/Checkmate**: `Qh5+`, `Qxf7#`
+3. Press Enter or click "Move"
+4. Receive AI coaching feedback from Claude
+5. The cursor automatically focuses for your next move!
 
-## Move Notation Examples
+## 🏗️ Tech Stack
 
-- **Pawn moves**: `e4`, `d5`, `c3`
-- **Piece moves**: `Nf3` (knight to f3), `Bc4` (bishop to c4)
-- **Captures**: `exd5` (pawn takes on d5), `Nxe5` (knight takes on e5)
-- **Castling**: `O-O` (kingside), `O-O-O` (queenside)
-- **Check**: `Qh5+`
-- **Checkmate**: `Qxf7#`
+### Backend
+- **Flask** - REST API framework
+- **python-chess** - Chess logic and validation
+- **Anthropic Claude API** - AI coaching engine
+- **SQLAlchemy** - Game storage and history
+- **python-dotenv** - Environment configuration
 
-## Project Structure
+### Frontend
+- **React 19** - UI framework
+- **Vite** - Build tool and dev server
+- **Tailwind CSS** - Styling
+- **chess.js** - Chess move validation
+- **Axios** - HTTP client
+- **Custom Chess Board** - Hand-built component with unicode pieces
+
+## 📁 Project Structure
 
 ```
 chess-coach/
 ├── backend/
 │   ├── app/
-│   │   ├── models/         # Database models
-│   │   ├── routes/         # API endpoints
-│   │   ├── services/       # Business logic
-│   │   └── utils/          # Helper functions
-│   ├── requirements.txt    # Python dependencies
-│   └── run.py             # Flask app entry point
+│   │   ├── models/          # Database models (Game, CoachingFeedback)
+│   │   ├── routes/          # API endpoints
+│   │   │   └── game_routes.py
+│   │   ├── services/        # Business logic
+│   │   │   ├── chess_service.py    # Chess game management
+│   │   │   └── claude_service.py   # AI coaching logic
+│   │   └── utils/           # Helper functions
+│   ├── .env.example         # Environment variables template
+│   ├── requirements.txt     # Python dependencies
+│   └── run.py              # Flask app entry point
 ├── frontend/
 │   ├── src/
-│   │   ├── components/    # React components
-│   │   ├── App.jsx        # Main app component
-│   │   └── main.jsx       # Entry point
-│   ├── package.json       # Node dependencies
-│   └── vite.config.js     # Vite configuration
+│   │   ├── components/
+│   │   │   ├── ChessBoard.jsx       # Main game component
+│   │   │   └── SimpleChessBoard.jsx # Custom board renderer
+│   │   ├── App.jsx          # Root component
+│   │   └── main.jsx         # Entry point
+│   ├── package.json         # Node dependencies
+│   ├── postcss.config.js    # Tailwind CSS configuration
+│   └── vite.config.js       # Vite configuration
 └── README.md
 ```
 
-## API Endpoints
+## 🔌 API Endpoints
 
-- `GET /health` - Health check
-- `POST /api/game/new` - Start a new game
-- `POST /api/game/move` - Make a move and get coaching
-- `GET /api/game/state` - Get current board state
-- `POST /api/game/save` - Save completed game
-- `GET /api/game/games` - Get all saved games
-- `GET /api/game/stats` - Get win/loss statistics
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/health` | Health check |
+| POST | `/api/game/new` | Start a new game |
+| POST | `/api/game/move` | Make a move and get coaching |
+| POST | `/api/game/batch-moves` | Submit multiple moves at once |
+| GET | `/api/game/state` | Get current board state |
+| POST | `/api/game/save` | Save completed game |
+| GET | `/api/game/games` | Get all saved games |
+| GET | `/api/game/stats` | Get win/loss statistics |
 
-## Contributing
+## 🎨 Recent Updates
 
-Feel free to open issues or submit pull requests!
+### v1.0.0 (Initial Release)
+- ✅ Custom chess board component with professional lichess.org colors
+- ✅ Auto-focus input field for rapid move entry
+- ✅ Responsive layout for all screen sizes
+- ✅ Real-time AI coaching with Claude Sonnet 4
+- ✅ Move validation with helpful error messages
+- ✅ Game phase detection (opening/middlegame/endgame)
+- ✅ ELO-based coaching adaptation
+- ✅ Tailwind CSS v4 integration
 
-## License
+## 🚀 Deployment
 
-MIT
+### Local Development
+Already running! See Quick Start above.
 
-## Acknowledgments
+### Production Considerations
+- Set `debug=False` in `run.py`
+- Use a production WSGI server (gunicorn, uWSGI)
+- Set up proper database (PostgreSQL recommended)
+- Configure environment variables securely
+- Use HTTPS for API key security
 
-- Built with [Claude](https://www.anthropic.com/claude) by Anthropic
-- Chess logic powered by [python-chess](https://python-chess.readthedocs.io/)
-- Frontend chess logic by [chess.js](https://github.com/jhlywa/chess.js)
+## 🤝 Contributing
+
+Contributions are welcome! Here's how:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📝 Development Notes
+
+### Backend
+- Uses in-memory SQLite database (games stored in `chess_coach.db`)
+- Virtual environment recommended (`venv/`)
+- API key must be set in `.env` file
+
+### Frontend
+- Hot module reloading enabled via Vite
+- Tailwind CSS configured with PostCSS
+- Custom board uses unicode chess symbols for pieces
+
+## 🐛 Troubleshooting
+
+**Board not updating?**
+- Hard refresh browser (`Cmd+Shift+R` on Mac, `Ctrl+Shift+R` on Windows)
+- Check console for errors
+- Verify backend is running on port 5001
+
+**"Invalid move" errors?**
+- Use proper algebraic notation
+- For captures, include the 'x': `exd5` not `ed5`
+- Check the current turn (White/Black indicator)
+
+**Backend not starting?**
+- Activate virtual environment: `source venv/bin/activate`
+- Install dependencies: `pip3 install -r requirements.txt`
+- Check `.env` file has valid `ANTHROPIC_API_KEY`
+
+**Frontend not loading?**
+- Run `npm install` to ensure dependencies are installed
+- Check port 5173 is not in use
+- Verify backend is running (frontend needs API)
+
+## 📄 License
+
+MIT License - see LICENSE file for details
+
+## 🙏 Acknowledgments
+
+- **Anthropic** - Claude AI for intelligent coaching
+- **python-chess** - Robust chess logic library
+- **chess.js** - JavaScript chess utilities
+- **Lichess.org** - Inspiration for board design
+- Built with assistance from Claude (Anthropic)
+
+## 📧 Contact
+
+Project Link: [https://github.com/sidherun/chess-coach](https://github.com/sidherun/chess-coach)
+
+---
+
+**Happy Learning! ♟️**
