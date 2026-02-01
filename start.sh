@@ -41,13 +41,17 @@ echo "🧹 Cleaning up existing processes..."
 lsof -ti:5001 | xargs kill -9 2>/dev/null || true
 lsof -ti:5173 | xargs kill -9 2>/dev/null || true
 
+# Create logs directory
+mkdir -p "$PROJECT_ROOT/logs"
+
 # Start backend server
 echo "🔧 Starting backend server (port 5001)..."
 cd "$PROJECT_ROOT/backend"
 source venv/bin/activate
-python run.py > ../logs/backend.log 2>&1 &
+nohup python run.py > "$PROJECT_ROOT/logs/backend.log" 2>&1 &
 BACKEND_PID=$!
 echo "   Backend PID: $BACKEND_PID"
+echo "$BACKEND_PID" > "$PROJECT_ROOT/logs/backend.pid"
 cd "$PROJECT_ROOT"
 
 # Wait a moment for backend to start
@@ -56,15 +60,11 @@ sleep 2
 # Start frontend server
 echo "🎨 Starting frontend dev server (port 5173)..."
 cd "$PROJECT_ROOT/frontend"
-npm run dev > ../logs/frontend.log 2>&1 &
+nohup npm run dev > "$PROJECT_ROOT/logs/frontend.log" 2>&1 &
 FRONTEND_PID=$!
 echo "   Frontend PID: $FRONTEND_PID"
-cd "$PROJECT_ROOT"
-
-# Save PIDs to file for stop script
-mkdir -p "$PROJECT_ROOT/logs"
-echo "$BACKEND_PID" > "$PROJECT_ROOT/logs/backend.pid"
 echo "$FRONTEND_PID" > "$PROJECT_ROOT/logs/frontend.pid"
+cd "$PROJECT_ROOT"
 
 echo ""
 echo "✅ Chess Coach is starting up!"
@@ -97,3 +97,20 @@ fi
 echo ""
 echo "🎉 Ready! Open http://localhost:5173 in your browser"
 echo ""
+
+# If backend failed to start, show the error
+sleep 1
+if ! lsof -ti:5001 > /dev/null 2>&1; then
+    echo "❌ Backend failed to start! Check the error:"
+    echo "---"
+    tail -20 "$PROJECT_ROOT/logs/backend.log" 2>/dev/null || echo "No log file found"
+    echo "---"
+fi
+
+# If frontend failed to start, show the error
+if ! lsof -ti:5173 > /dev/null 2>&1; then
+    echo "❌ Frontend failed to start! Check the error:"
+    echo "---"
+    tail -20 "$PROJECT_ROOT/logs/frontend.log" 2>/dev/null || echo "No log file found"
+    echo "---"
+fi
