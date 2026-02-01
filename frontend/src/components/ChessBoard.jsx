@@ -144,8 +144,13 @@ export default function ChessBoard() {
     
     // If in multi-move mode and have local moves, just undo locally
     if (multiMoveMode && moveHistory.length > 0) {
-      const tempGame = new Chess(game.fen());
-      tempGame.undo();
+      // Clone the game state properly and undo
+      const newGame = new Chess(game.fen());
+      // Copy move history by replaying moves
+      const tempGame = new Chess();
+      for (let i = 0; i < moveHistory.length - 1; i++) {
+        tempGame.move(moveHistory[i].notation);
+      }
       
       setGame(tempGame);
       setBoardPosition(tempGame.fen());
