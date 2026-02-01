@@ -10,6 +10,7 @@ An AI-powered chess coaching application that provides real-time feedback on you
 ## ✨ Features
 
 - **Real-time Move Analysis**: Enter moves in algebraic notation and receive instant AI coaching feedback
+- **Multi-Move Mode**: Make multiple moves before getting coaching - perfect for practicing sequences
 - **Interactive Board**: Click pieces to make moves and learn notation visually
 - **Undo Moves**: Quickly fix mistakes with ↩️ Undo button or Ctrl+Z / ⌘Z keyboard shortcut
 - **Adaptive Coaching**: Adjust coaching intensity (low, medium, high) based on your needs
@@ -82,11 +83,19 @@ http://localhost:5173
    - Click pieces to see green indicators for legal moves
    - After moving, see "✓ You just played: **e4**" to learn notation
    - Coordinate labels (a1-h8) visible on every square
-4. **Undo mistakes:** 
+4. **Multi-Move Mode** (NEW!):
+   - Toggle **"Multi-Move: OFF"** → **"🎯 Multi-Move: ON"** (purple button)
+   - Make multiple moves without coaching interruption
+   - Perfect for practicing openings or exploring variations
+   - Click **"Get Coaching (3)"** when ready for AI analysis
+   - Counter shows how many moves you've made
+5. **Undo mistakes:** 
    - Click the **↩️ Undo** button
    - Or press **Ctrl+Z** (Windows/Linux) or **⌘Z** (Mac)
-5. **Get AI coaching:**
-   - Receive feedback from Claude after each move
+   - Works in both single-move and multi-move modes
+6. **Get AI coaching:**
+   - In single-move mode: Instant feedback after each move
+   - In multi-move mode: Click "Get Coaching" when ready
    - Adjust coaching intensity and your ELO rating
    - Learn opening principles, tactics, and strategy
 
@@ -159,7 +168,16 @@ chess-coach/
 
 ## 🎨 Recent Updates
 
-### v1.1.0 (Latest)
+### v1.2.0 (Latest)
+- ✅ **Multi-Move Mode** - Make multiple moves before getting coaching feedback
+- ✅ Purple toggle button with clear ON/OFF states
+- ✅ "Get Coaching" button shows move counter (e.g., "Get Coaching (3)")
+- ✅ Local undo support in multi-move mode
+- ✅ Confirmation dialog prevents accidental loss of unsaved moves
+- ✅ Uses `/batch-moves` endpoint for efficient bulk analysis
+- ✅ Perfect for practicing opening sequences and exploring variations
+
+### v1.1.0
 - ✅ **Undo feature** - Fix mistakes with button or Ctrl+Z/⌘Z keyboard shortcut
 - ✅ Keyboard shortcut UI hint for discoverability
 - ✅ Tooltip on undo button showing shortcut

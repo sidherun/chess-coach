@@ -21,6 +21,8 @@ export default function ChessBoard() {
   const [lastMoveNotation, setLastMoveNotation] = useState(''); // Move notation (e.g., "e4")
   const [selectedSquare, setSelectedSquare] = useState(null); // Currently selected square
   const [legalMoves, setLegalMoves] = useState([]); // Legal destination squares
+  const [multiMoveMode, setMultiMoveMode] = useState(false); // Multi-move mode toggle
+  const [moveHistory, setMoveHistory] = useState([]); // Collected moves in multi-move mode
   const inputRef = useRef(null); // Reference for the input field
 
   // Auto-start a new game when component mounts
@@ -130,6 +132,28 @@ export default function ChessBoard() {
     setSelectedSquare(null);
     setLegalMoves([]);
     
+    // If in multi-move mode and have local moves, just undo locally
+    if (multiMoveMode && moveHistory.length > 0) {
+      const tempGame = new Chess(game.fen());
+      tempGame.undo();
+      
+      setGame(tempGame);
+      setBoardPosition(tempGame.fen());
+      setBoardKey(Date.now());
+      
+      const undoneMove = moveHistory[moveHistory.length - 1];
+      setMoveHistory(moveHistory.slice(0, -1));
+      
+      setLastMoveFrom(null);
+      setLastMoveTo(null);
+      setLastMoveNotation('');
+      
+      setFeedback(`↩️ Undid move: ${undoneMove.notation} (${moveHistory.length - 1} move${moveHistory.length - 1 !== 1 ? 's' : ''} remaining)`);
+      setLoading(false);
+      return;
+    }
+    
+    // Normal backend undo
     try {
       const response = await axios.post(`${API_BASE_URL}/undo`);
       
@@ -160,6 +184,67 @@ export default function ChessBoard() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const getCoaching = async () => {
+    if (moveHistory.length === 0) {
+      setFeedback('No moves to analyze. Make some moves first!');
+      return;
+    }
+
+    setLoading(true);
+    
+    try {
+      // Send all collected moves to backend using batch-moves endpoint
+      const moves = moveHistory.map(m => m.notation);
+      
+      const response = await axios.post(`${API_BASE_URL}/batch-moves`, {
+        moves: moves,
+        analyze_move: moves.length, // Analyze the last move
+        player_elo: playerElo,
+        coaching_intensity: coachingIntensity
+      });
+
+      if (response.data.success) {
+        // Update board state from backend (to ensure sync)
+        const newFen = response.data.board_state.fen;
+        const newGame = new Chess(newFen);
+        setGame(newGame);
+        setBoardPosition(newFen);
+        setBoardKey(Date.now());
+        
+        setFeedback(response.data.coaching_feedback || 'Moves submitted successfully!');
+        
+        // Clear multi-move history now that we've submitted
+        setMoveHistory([]);
+        
+        console.log('Got coaching for', moves.length, 'moves:', moves.join(', '));
+      } else {
+        setFeedback(`Error getting coaching: ${response.data.error}`);
+      }
+    } catch (error) {
+      console.error('Error getting coaching:', error);
+      setFeedback('Error getting coaching. Check the console for details.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleMultiMoveMode = () => {
+    if (multiMoveMode && moveHistory.length > 0) {
+      // Warn if trying to turn off with unsaved moves
+      if (!window.confirm(`You have ${moveHistory.length} unsaved move${moveHistory.length !== 1 ? 's' : ''}. Turn off multi-move mode?`)) {
+        return;
+      }
+      setMoveHistory([]);
+    }
+    
+    setMultiMoveMode(!multiMoveMode);
+    setFeedback(
+      multiMoveMode 
+        ? 'Multi-move mode OFF. Moves will trigger instant coaching.' 
+        : '🎯 Multi-move mode ON. Make multiple moves, then click "Get Coaching".'
+    );
   };
 
   const handleSquareClick = (square) => {
@@ -204,6 +289,31 @@ export default function ChessBoard() {
     setSelectedSquare(null);
     setLegalMoves([]);
     
+    // If in multi-move mode, just make the move locally
+    if (multiMoveMode) {
+      const tempGame = new Chess(game.fen());
+      const move = tempGame.move(moveNotation);
+      
+      if (move) {
+        // Update board locally
+        setGame(tempGame);
+        setBoardPosition(tempGame.fen());
+        setBoardKey(Date.now());
+        setLastMoveFrom(fromSquare);
+        setLastMoveTo(toSquare);
+        setLastMoveNotation(moveNotation);
+        
+        // Add to move history
+        setMoveHistory([...moveHistory, { notation: moveNotation, from: fromSquare, to: toSquare }]);
+        
+        setFeedback(`Multi-move: ${moveHistory.length + 1} move${moveHistory.length + 1 !== 1 ? 's' : ''} made. Click "Get Coaching" when ready.`);
+      }
+      
+      setLoading(false);
+      return;
+    }
+    
+    // Normal single-move mode with immediate coaching
     try {
       const response = await axios.post(`${API_BASE_URL}/move`, {
         move: moveNotation,
@@ -315,6 +425,29 @@ export default function ChessBoard() {
                 >
                   <span>↩️</span> Undo
                 </button>
+              </div>
+              
+              {/* Multi-move mode toggle and Get Coaching button */}
+              <div className="flex gap-2">
+                <button
+                  onClick={toggleMultiMoveMode}
+                  className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    multiMoveMode 
+                      ? 'bg-purple-600 text-white hover:bg-purple-700 ring-2 ring-purple-400' 
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
+                >
+                  {multiMoveMode ? '🎯 Multi-Move: ON' : 'Multi-Move: OFF'}
+                </button>
+                {multiMoveMode && (
+                  <button
+                    onClick={getCoaching}
+                    disabled={loading || moveHistory.length === 0}
+                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 text-sm font-medium"
+                  >
+                    Get Coaching ({moveHistory.length})
+                  </button>
+                )}
               </div>
               
               {/* Keyboard shortcut hint */}
