@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import SimpleChessBoard from './SimpleChessBoard';
 import { Chess } from 'chess.js';
 import axios from 'axios';
@@ -16,11 +16,19 @@ export default function ChessBoard() {
   const [playerElo, setPlayerElo] = useState(800);
   const [coachingIntensity, setCoachingIntensity] = useState('medium');
   const [lastMove, setLastMove] = useState(null); // Track last move for highlighting
+  const inputRef = useRef(null); // Reference for the input field
 
   // Auto-start a new game when component mounts
   useEffect(() => {
     startNewGame();
   }, []);
+
+  // Auto-focus input after each move
+  useEffect(() => {
+    if (!loading && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [loading, boardPosition]);
 
   const startNewGame = async () => {
     try {
@@ -67,7 +75,7 @@ export default function ChessBoard() {
         console.log('Board updated to:', newFen);
         console.log('Move made:', response.data.move);
       } else {
-        setFeedback(`Error: ${response.data.error}`);
+        setFeedback(`Invalid move: ${response.data.error}\n\nTip: For captures, use format like 'exd5' or 'Nxe5'`);
       }
     } catch (error) {
       console.error('Error making move:', error);
@@ -100,6 +108,7 @@ export default function ChessBoard() {
             <div className="space-y-2 w-full" style={{ maxWidth: 'min(90%, 500px)' }}>
               <div className="flex gap-2">
                 <input
+                  ref={inputRef}
                   type="text"
                   value={moveInput}
                   onChange={(e) => setMoveInput(e.target.value)}
@@ -107,6 +116,7 @@ export default function ChessBoard() {
                   placeholder="Enter move (e.g., e4, Nf3)"
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                   disabled={loading}
+                  autoFocus
                 />
                 <button
                   onClick={makeMove}
