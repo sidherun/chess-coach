@@ -26,8 +26,11 @@ export default function ChessBoard() {
   const [chatMessages, setChatMessages] = useState([]); // Chat history
   const [chatInput, setChatInput] = useState(''); // Current chat input
   const [chatLoading, setChatLoading] = useState(false); // Chat API loading state
+  const [feedbackHeight, setFeedbackHeight] = useState(40); // Percentage height for feedback section
+  const [isDragging, setIsDragging] = useState(false); // Resize drag state
   const inputRef = useRef(null); // Reference for the input field
   const chatEndRef = useRef(null); // Reference for auto-scrolling chat
+  const rightPanelRef = useRef(null); // Reference for right panel container
 
   // Auto-start a new game when component mounts
   useEffect(() => {
@@ -38,6 +41,41 @@ export default function ChessBoard() {
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages]);
+
+  // Handle resize drag
+  const handleMouseDown = () => {
+    setIsDragging(true);
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging || !rightPanelRef.current) return;
+
+    const panel = rightPanelRef.current;
+    const panelRect = panel.getBoundingClientRect();
+    const mouseY = e.clientY - panelRect.top;
+    const panelHeight = panelRect.height;
+    
+    // Calculate percentage (constrain between 20% and 80%)
+    let newPercentage = (mouseY / panelHeight) * 100;
+    newPercentage = Math.max(20, Math.min(80, newPercentage));
+    
+    setFeedbackHeight(newPercentage);
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  useEffect(() => {
+    if (isDragging) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+      return () => {
+        window.removeEventListener('mousemove', handleMouseMove);
+        window.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [isDragging]);
 
   // Auto-focus input after each move
   useEffect(() => {
@@ -551,9 +589,12 @@ export default function ChessBoard() {
           </div>
   
           {/* Right Side - Coaching Feedback & Chat */}
-          <div className="bg-white rounded-lg shadow-lg flex flex-col overflow-hidden">
-            {/* Coaching Feedback Section - Fixed height */}
-            <div className="p-4 border-b border-gray-200 flex-shrink-0 max-h-[40%] overflow-y-auto">
+          <div ref={rightPanelRef} className="bg-white rounded-lg shadow-lg flex flex-col overflow-hidden">
+            {/* Coaching Feedback Section - Resizable */}
+            <div 
+              className="p-4 border-b border-gray-200 flex-shrink-0 overflow-y-auto"
+              style={{ height: `${feedbackHeight}%` }}
+            >
               <h2 className="text-lg font-bold mb-2 text-gray-800">Coach's Feedback</h2>
               <div className="prose prose-sm max-w-none">
                 {feedback ? (
@@ -566,8 +607,22 @@ export default function ChessBoard() {
               </div>
             </div>
 
+            {/* Draggable Resize Handle */}
+            <div
+              onMouseDown={handleMouseDown}
+              className={`h-2 bg-gray-300 hover:bg-blue-500 cursor-row-resize flex items-center justify-center transition-colors ${
+                isDragging ? 'bg-blue-500' : ''
+              }`}
+              title="Drag to resize"
+            >
+              <div className="w-12 h-1 bg-gray-500 rounded-full"></div>
+            </div>
+
             {/* Chat Section - Flexible height */}
-            <div className="flex flex-col flex-1 overflow-hidden min-h-0">
+            <div 
+              className="flex flex-col overflow-hidden min-h-0"
+              style={{ height: `${100 - feedbackHeight}%` }}
+            >
               <div className="px-4 py-2 border-b border-gray-200 flex-shrink-0">
                 <h3 className="text-md font-semibold text-gray-800">💬 Ask Questions</h3>
                 <p className="text-xs text-gray-500">Ask follow-up questions about the coaching or position</p>
