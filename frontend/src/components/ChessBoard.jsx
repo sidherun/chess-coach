@@ -482,7 +482,6 @@ export default function ChessBoard() {
               <div className="text-xs text-gray-600 space-y-1">
                 <p>Phase: <span className="font-semibold capitalize">{gamePhase}</span></p>
                 <p>Turn: <span className="font-semibold capitalize">{game.turn() === 'w' ? 'White' : 'Black'}</span></p>
-                <p className="text-blue-600">FEN: {boardPosition.substring(0, 30)}...</p>
               </div>
             </div>
           </div>
