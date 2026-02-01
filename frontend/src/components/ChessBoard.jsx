@@ -35,6 +35,20 @@ export default function ChessBoard() {
     }
   }, [loading, boardPosition]);
 
+  // Add keyboard shortcut for undo (Ctrl+Z / Cmd+Z)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Check for Ctrl+Z (Windows/Linux) or Cmd+Z (Mac)
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !loading) {
+        e.preventDefault(); // Prevent browser undo
+        undoLastMove();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [loading]); // Re-attach when loading state changes
+
   const startNewGame = async () => {
     try {
       await axios.post(`${API_BASE_URL}/new`, {
@@ -108,6 +122,43 @@ export default function ChessBoard() {
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
       makeMove();
+    }
+  };
+
+  const undoLastMove = async () => {
+    setLoading(true);
+    setSelectedSquare(null);
+    setLegalMoves([]);
+    
+    try {
+      const response = await axios.post(`${API_BASE_URL}/undo`);
+      
+      if (response.data.success) {
+        const newFen = response.data.board_state.fen;
+        
+        // Update game state
+        const newGame = new Chess(newFen);
+        setGame(newGame);
+        setBoardPosition(newFen);
+        setBoardKey(Date.now());
+        
+        // Clear last move highlighting
+        setLastMoveFrom(null);
+        setLastMoveTo(null);
+        setLastMoveNotation('');
+        
+        setGamePhase(response.data.game_phase);
+        setFeedback(`↩️ Undid move: ${response.data.undone_move}`);
+        
+        console.log('Undid move:', response.data.undone_move);
+      } else {
+        setFeedback(`Cannot undo: ${response.data.error}`);
+      }
+    } catch (error) {
+      console.error('Error undoing move:', error);
+      setFeedback('Error undoing move. Check the console for details.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -248,13 +299,28 @@ export default function ChessBoard() {
                   {loading ? 'Analyzing...' : 'Move'}
                 </button>
               </div>
-  
-              <button
-                onClick={startNewGame}
-                className="w-full px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-sm font-medium"
-              >
-                New Game
-              </button>
+              
+              <div className="flex gap-2">
+                <button
+                  onClick={startNewGame}
+                  className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-sm font-medium"
+                >
+                  New Game
+                </button>
+                <button
+                  onClick={undoLastMove}
+                  disabled={loading}
+                  className="flex-1 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:bg-gray-300 text-sm font-medium flex items-center justify-center gap-1"
+                  title="Undo last move (Ctrl+Z or Cmd+Z)"
+                >
+                  <span>↩️</span> Undo
+                </button>
+              </div>
+              
+              {/* Keyboard shortcut hint */}
+              <div className="text-[10px] text-gray-500 text-center">
+                💡 Tip: Press <kbd className="px-1 py-0.5 bg-gray-200 border border-gray-300 rounded text-gray-700 font-mono">Ctrl+Z</kbd> (or <kbd className="px-1 py-0.5 bg-gray-200 border border-gray-300 rounded text-gray-700 font-mono">⌘Z</kbd> on Mac) to undo
+              </div>
   
               <div className="flex gap-3 text-sm">
                 <div className="flex-1">

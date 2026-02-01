@@ -271,3 +271,24 @@ def set_coaching_intensity():
         "success": True,
         "message": f"Coaching intensity set to {intensity}"
     })
+
+@game_bp.route('/undo', methods=['POST'])
+def undo_move():
+    """
+    Undo the last move made
+    
+    Returns:
+        Updated board state after undoing the move
+    """
+    result = chess_service.undo_last_move()
+    
+    if not result['success']:
+        return jsonify(result), 400
+    
+    return jsonify({
+        "success": True,
+        "message": result['message'],
+        "undone_move": result['undone_move'],
+        "board_state": chess_service.get_board_state(),
+        "game_phase": chess_service.get_game_phase()
+    })

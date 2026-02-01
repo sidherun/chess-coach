@@ -10,10 +10,13 @@ An AI-powered chess coaching application that provides real-time feedback on you
 ## ✨ Features
 
 - **Real-time Move Analysis**: Enter moves in algebraic notation and receive instant AI coaching feedback
+- **Interactive Board**: Click pieces to make moves and learn notation visually
+- **Undo Moves**: Quickly fix mistakes with ↩️ Undo button or Ctrl+Z / ⌘Z keyboard shortcut
 - **Adaptive Coaching**: Adjust coaching intensity (low, medium, high) based on your needs
 - **ELO-based Guidance**: Tailored advice appropriate to your skill level (default 800 ELO)
 - **Game Phase Awareness**: Different coaching strategies for opening, middlegame, and endgame
 - **Custom Chess Board**: Professional design with clear, high-contrast pieces (lichess.org color scheme)
+- **Visual Learning**: Coordinate labels on every square, legal move indicators, and move highlighting
 - **Auto-Focus Input**: Cursor automatically ready after each move for rapid play
 - **Responsive Design**: Works seamlessly on laptop screens and external monitors
 - **Game History**: Save and review your games with move tracking
@@ -72,15 +75,27 @@ http://localhost:5173
 ## 🎯 How to Play
 
 1. The game auto-starts when you open the app
-2. Enter moves in algebraic notation:
-   - **Pawn moves**: `e4`, `d5`, `c3`
-   - **Piece moves**: `Nf3`, `Bc4`, `Qh5`
-   - **Captures**: `exd5`, `Nxe5`, `Bxf7`
-   - **Castling**: `O-O` (kingside), `O-O-O` (queenside)
-   - **Check/Checkmate**: `Qh5+`, `Qxf7#`
-3. Press Enter or click "Move"
-4. Receive AI coaching feedback from Claude
-5. The cursor automatically focuses for your next move!
+2. **Two ways to make moves:**
+   - **Click the board**: Click a piece, then click destination (great for learning!)
+   - **Type notation**: Enter moves in text box (e.g., `e4`, `Nf3`)
+3. **Learn notation visually:**
+   - Click pieces to see green indicators for legal moves
+   - After moving, see "✓ You just played: **e4**" to learn notation
+   - Coordinate labels (a1-h8) visible on every square
+4. **Undo mistakes:** 
+   - Click the **↩️ Undo** button
+   - Or press **Ctrl+Z** (Windows/Linux) or **⌘Z** (Mac)
+5. **Get AI coaching:**
+   - Receive feedback from Claude after each move
+   - Adjust coaching intensity and your ELO rating
+   - Learn opening principles, tactics, and strategy
+
+### Move Notation Reference:
+- **Pawn moves**: `e4`, `d5`, `c3`
+- **Piece moves**: `Nf3`, `Bc4`, `Qh5`
+- **Captures**: `exd5`, `Nxe5`, `Bxf7`
+- **Castling**: `O-O` (kingside), `O-O-O` (queenside)
+- **Check/Checkmate**: `Qh5+`, `Qxf7#`
 
 ## 🏗️ Tech Stack
 
@@ -135,6 +150,7 @@ chess-coach/
 | GET | `/health` | Health check |
 | POST | `/api/game/new` | Start a new game |
 | POST | `/api/game/move` | Make a move and get coaching |
+| POST | `/api/game/undo` | Undo the last move |
 | POST | `/api/game/batch-moves` | Submit multiple moves at once |
 | GET | `/api/game/state` | Get current board state |
 | POST | `/api/game/save` | Save completed game |
@@ -143,8 +159,17 @@ chess-coach/
 
 ## 🎨 Recent Updates
 
+### v1.1.0 (Latest)
+- ✅ **Undo feature** - Fix mistakes with button or Ctrl+Z/⌘Z keyboard shortcut
+- ✅ Keyboard shortcut UI hint for discoverability
+- ✅ Tooltip on undo button showing shortcut
+
 ### v1.0.0 (Initial Release)
 - ✅ Custom chess board component with professional lichess.org colors
+- ✅ Interactive clickable board for learning notation
+- ✅ Legal move indicators (green dots/circles)
+- ✅ Coordinate labels on all squares (a1-h8)
+- ✅ Move highlighting (yellow=from, green=to)
 - ✅ Auto-focus input field for rapid move entry
 - ✅ Responsive layout for all screen sizes
 - ✅ Real-time AI coaching with Claude Sonnet 4

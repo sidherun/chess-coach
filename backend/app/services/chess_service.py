@@ -100,3 +100,35 @@ class ChessService:
             return "endgame"
         else:
             return "middlegame"
+    
+    def undo_last_move(self):
+        """
+        Undo the last move made
+        
+        Returns:
+            dict with success status and new board state
+        """
+        if len(self.moves) == 0:
+            return {
+                "success": False,
+                "error": "No moves to undo"
+            }
+        
+        try:
+            # Pop the last move from python-chess board
+            self.board.pop()
+            # Remove last move from our tracking list
+            undone_move = self.moves.pop()
+            
+            return {
+                "success": True,
+                "undone_move": undone_move,
+                "fen": self.board.fen(),
+                "move_count": len(self.moves),
+                "message": f"Undid move: {undone_move}"
+            }
+        except Exception as e:
+            return {
+                "success": False,
+                "error": f"Could not undo move: {str(e)}"
+            }
