@@ -292,3 +292,43 @@ def undo_move():
         "board_state": chess_service.get_board_state(),
         "game_phase": chess_service.get_game_phase()
     })
+
+@game_bp.route('/chat', methods=['POST'])
+def chat():
+    """
+    Ask a follow-up question about the coaching or game state
+    
+    Expected JSON:
+    {
+        "question": "Why was e4 a good move?",
+        "recent_coaching": "e4 is a strong opening move...",  # optional
+        "player_elo": 800  # optional
+    }
+    """
+    data = request.get_json()
+    question = data.get('question')
+    recent_coaching = data.get('recent_coaching', '')
+    player_elo = data.get('player_elo', 800)
+    
+    if not question:
+        return jsonify({"success": False, "error": "No question provided"}), 400
+    
+    # Get current game context
+    game_phase = chess_service.get_game_phase()
+    move_history = chess_service.moves
+    fen = chess_service.board.fen()
+    
+    # Get AI response using Claude service
+    response = claude_service.answer_question(
+        question=question,
+        fen=fen,
+        game_phase=game_phase,
+        move_history=move_history,
+        recent_coaching=recent_coaching,
+        player_elo=player_elo
+    )
+    
+    return jsonify({
+        "success": True,
+        "answer": response
+    })

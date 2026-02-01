@@ -131,3 +131,50 @@ Keep the tone encouraging and constructive."""
             
         except Exception as e:
             return f"Error analyzing game: {str(e)}"
+    
+    def answer_question(self, question, fen, game_phase, move_history=None, 
+                       recent_coaching="", player_elo=800):
+        """
+        Answer a follow-up question about the game or coaching
+        
+        Args:
+            question: Player's question
+            fen: Current board position
+            game_phase: Current game phase
+            move_history: List of moves
+            recent_coaching: Most recent coaching feedback
+            player_elo: Player's rating
+        
+        Returns:
+            Answer to the question
+        """
+        
+        elo_guidance = self._get_elo_appropriate_guidance(player_elo)
+        
+        prompt = f"""You are a patient chess coach having a conversation with a {player_elo} ELO player.
+
+Current Game Context:
+- Phase: {game_phase}
+- Position (FEN): {fen}
+{f"- Move History: {' '.join(move_history)}" if move_history else ""}
+{f"- Recent Coaching: {recent_coaching}" if recent_coaching else ""}
+
+Player's Question: "{question}"
+
+{elo_guidance}
+
+Answer their question in a clear, encouraging way. Use the current game context to make your explanation concrete and relevant. If the question relates to the current position, reference specific pieces or squares. Keep your response conversational and helpful."""
+
+        try:
+            message = self.client.messages.create(
+                model=self.model,
+                max_tokens=1024,
+                messages=[
+                    {"role": "user", "content": prompt}
+                ]
+            )
+            
+            return message.content[0].text
+            
+        except Exception as e:
+            return f"Error answering question: {str(e)}"

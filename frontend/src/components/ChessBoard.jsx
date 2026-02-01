@@ -23,12 +23,21 @@ export default function ChessBoard() {
   const [legalMoves, setLegalMoves] = useState([]); // Legal destination squares
   const [multiMoveMode, setMultiMoveMode] = useState(false); // Multi-move mode toggle
   const [moveHistory, setMoveHistory] = useState([]); // Collected moves in multi-move mode
+  const [chatMessages, setChatMessages] = useState([]); // Chat history
+  const [chatInput, setChatInput] = useState(''); // Current chat input
+  const [chatLoading, setChatLoading] = useState(false); // Chat API loading state
   const inputRef = useRef(null); // Reference for the input field
+  const chatEndRef = useRef(null); // Reference for auto-scrolling chat
 
   // Auto-start a new game when component mounts
   useEffect(() => {
     startNewGame();
   }, []);
+
+  // Auto-scroll chat to bottom when new messages arrive
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatMessages]);
 
   // Auto-focus input after each move
   useEffect(() => {
@@ -61,6 +70,7 @@ export default function ChessBoard() {
       setBoardPosition(newGame.fen());
       setFeedback('New game started! Make your first move.');
       setGamePhase('opening');
+      setChatMessages([]); // Clear chat history
     } catch (error) {
       console.error('Error starting game:', error);
       setFeedback('Error starting new game. Make sure backend is running on port 5001.');
@@ -247,6 +257,46 @@ export default function ChessBoard() {
     );
   };
 
+  const sendChatMessage = async () => {
+    if (!chatInput.trim()) return;
+    
+    const userMessage = chatInput.trim();
+    setChatInput('');
+    
+    // Add user message to chat
+    setChatMessages([...chatMessages, { role: 'user', content: userMessage }]);
+    setChatLoading(true);
+    
+    try {
+      const response = await axios.post(`${API_BASE_URL}/chat`, {
+        question: userMessage,
+        recent_coaching: feedback,
+        player_elo: playerElo
+      });
+      
+      if (response.data.success) {
+        // Add AI response to chat
+        setChatMessages(prev => [...prev, { 
+          role: 'assistant', 
+          content: response.data.answer 
+        }]);
+      } else {
+        setChatMessages(prev => [...prev, { 
+          role: 'error', 
+          content: `Error: ${response.data.error}` 
+        }]);
+      }
+    } catch (error) {
+      console.error('Error sending chat message:', error);
+      setChatMessages(prev => [...prev, { 
+        role: 'error', 
+        content: 'Failed to get response. Check console for details.' 
+      }]);
+    } finally {
+      setChatLoading(false);
+    }
+  };
+
   const handleSquareClick = (square) => {
     // If no square selected, select this square (if it has a piece of current turn)
     if (!selectedSquare) {
@@ -360,7 +410,7 @@ export default function ChessBoard() {
   
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1 overflow-hidden max-w-[1600px] mx-auto w-full">
           {/* Left Side - Chess Board */}
-          <div className="bg-white p-4 rounded-lg shadow-lg flex flex-col items-center justify-start">
+          <div className="bg-white p-4 rounded-lg shadow-lg flex flex-col items-center overflow-y-auto">
             <div className="mb-4 w-full flex justify-center">
               <div className="flex flex-col items-center gap-2">
                 <SimpleChessBoard 
@@ -486,17 +536,92 @@ export default function ChessBoard() {
             </div>
           </div>
   
-          {/* Right Side - Coaching Feedback */}
-          <div className="bg-white p-4 rounded-lg shadow-lg flex flex-col overflow-hidden">
-            <h2 className="text-xl font-bold mb-3 text-gray-800 flex-shrink-0">Coach's Feedback</h2>
-            <div className="prose prose-sm max-w-none overflow-y-auto flex-1">
-              {feedback ? (
-                <p className="whitespace-pre-wrap text-gray-700 text-sm leading-relaxed">{feedback}</p>
-              ) : (
-                <p className="text-gray-400 italic text-sm">
-                  Click "New Game" to start, then enter your moves to receive coaching!
-                </p>
-              )}
+          {/* Right Side - Coaching Feedback & Chat */}
+          <div className="bg-white rounded-lg shadow-lg flex flex-col overflow-hidden">
+            {/* Coaching Feedback Section - Fixed height */}
+            <div className="p-4 border-b border-gray-200 flex-shrink-0 max-h-[40%] overflow-y-auto">
+              <h2 className="text-lg font-bold mb-2 text-gray-800">Coach's Feedback</h2>
+              <div className="prose prose-sm max-w-none">
+                {feedback ? (
+                  <p className="whitespace-pre-wrap text-gray-700 text-sm leading-relaxed">{feedback}</p>
+                ) : (
+                  <p className="text-gray-400 italic text-sm">
+                    Click "New Game" to start, then enter your moves to receive coaching!
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Chat Section - Flexible height */}
+            <div className="flex flex-col flex-1 overflow-hidden min-h-0">
+              <div className="px-4 py-2 border-b border-gray-200 flex-shrink-0">
+                <h3 className="text-md font-semibold text-gray-800">💬 Ask Questions</h3>
+                <p className="text-xs text-gray-500">Ask follow-up questions about the coaching or position</p>
+              </div>
+
+              {/* Chat Messages */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50 min-h-0">
+                {chatMessages.length === 0 ? (
+                  <div className="text-center text-gray-400 italic text-sm mt-4">
+                    No questions yet. Ask anything about the coaching or position!
+                  </div>
+                ) : (
+                  chatMessages.map((msg, idx) => (
+                    <div 
+                      key={idx} 
+                      className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <div 
+                        className={`max-w-[85%] rounded-lg px-3 py-2 ${
+                          msg.role === 'user' 
+                            ? 'bg-blue-600 text-white' 
+                            : msg.role === 'error'
+                            ? 'bg-red-100 text-red-800'
+                            : 'bg-white text-gray-800 shadow'
+                        }`}
+                      >
+                        <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                      </div>
+                    </div>
+                  ))
+                )}
+                {chatLoading && (
+                  <div className="flex justify-start">
+                    <div className="bg-white rounded-lg px-3 py-2 shadow">
+                      <p className="text-sm text-gray-500">Coach is typing...</p>
+                    </div>
+                  </div>
+                )}
+                <div ref={chatEndRef} />
+              </div>
+
+              {/* Chat Input */}
+              <div className="p-3 border-t border-gray-200 flex-shrink-0 bg-white">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        sendChatMessage();
+                      }
+                    }}
+                    placeholder="Ask a question..."
+                    disabled={chatLoading}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  />
+                  <button
+                    onClick={sendChatMessage}
+                    disabled={chatLoading || !chatInput.trim()}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 text-sm font-medium"
+                  >
+                    Send
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">Press Enter to send</p>
+              </div>
             </div>
           </div>
         </div>
