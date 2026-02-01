@@ -13,6 +13,7 @@ An AI-powered chess coaching application that provides real-time feedback on you
 - **Multi-Move Mode**: Make multiple moves before getting coaching - perfect for practicing sequences
 - **Interactive Board**: Click pieces to make moves and learn notation visually
 - **Undo Moves**: Quickly fix mistakes with ↩️ Undo button or Ctrl+Z / ⌘Z keyboard shortcut
+- **One-Command Startup**: Automated scripts handle all setup (`./start.sh` or `start.bat`)
 - **Adaptive Coaching**: Adjust coaching intensity (low, medium, high) based on your needs
 - **ELO-based Guidance**: Tailored advice appropriate to your skill level (default 800 ELO)
 - **Game Phase Awareness**: Different coaching strategies for opening, middlegame, and endgame
@@ -199,6 +200,8 @@ chess-coach/
 │   ├── package.json         # Node dependencies
 │   ├── postcss.config.js    # Tailwind CSS configuration
 │   └── vite.config.js       # Vite configuration
+├── start.sh / start.bat     # One-command startup scripts
+├── stop.sh / stop.bat       # Server shutdown scripts
 └── README.md
 ```
 
@@ -218,7 +221,16 @@ chess-coach/
 
 ## 🎨 Recent Updates
 
-### v1.2.0 (Latest)
+### v1.2.1 (Latest)
+- ✅ **One-Command Startup** - Automated scripts for easy development (`./start.sh` or `start.bat`)
+- ✅ Auto-creates virtual environment on first run
+- ✅ Auto-installs all dependencies
+- ✅ Starts both backend and frontend with one command
+- ✅ Background process management with logging
+- ✅ Graceful shutdown with `./stop.sh` or `stop.bat`
+- ✅ Error detection and reporting in logs
+
+### v1.2.0
 - ✅ **Multi-Move Mode** - Make multiple moves before getting coaching feedback
 - ✅ Purple toggle button with clear ON/OFF states
 - ✅ "Get Coaching" button shows move counter (e.g., "Get Coaching (3)")
@@ -282,6 +294,11 @@ Contributions are welcome! Here's how:
 
 ## 🐛 Troubleshooting
 
+**Servers not starting?**
+- Use the startup script: `./start.sh` (or `start.bat` on Windows)
+- Check logs at `logs/backend.log` and `logs/frontend.log`
+- Ensure ports 5001 and 5173 are available
+
 **Board not updating?**
 - Hard refresh browser (`Cmd+Shift+R` on Mac, `Ctrl+Shift+R` on Windows)
 - Check console for errors
@@ -293,14 +310,19 @@ Contributions are welcome! Here's how:
 - Check the current turn (White/Black indicator)
 
 **Backend not starting?**
-- Activate virtual environment: `source venv/bin/activate`
-- Install dependencies: `pip3 install -r requirements.txt`
 - Check `.env` file has valid `ANTHROPIC_API_KEY`
+- If using manual setup, activate virtual environment: `source venv/bin/activate`
+- Install dependencies: `pip3 install -r requirements.txt`
 
 **Frontend not loading?**
-- Run `npm install` to ensure dependencies are installed
-- Check port 5173 is not in use
+- Run `npm install` in the `frontend/` directory
+- Check port 5173 is not in use: `lsof -ti:5173` (Mac/Linux)
 - Verify backend is running (frontend needs API)
+
+**Multi-move mode not working?**
+- Make sure you've clicked the "Multi-Move: OFF" button to toggle it ON
+- Click "Get Coaching" when ready to analyze your moves
+- Check backend logs for API errors
 
 ## 📄 License
 
