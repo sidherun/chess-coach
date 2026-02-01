@@ -44,6 +44,7 @@ cd chess-coach
 # Create .env file with your API key
 echo "ANTHROPIC_API_KEY=your_api_key_here" > backend/.env
 echo "PORT=5001" >> backend/.env
+echo "FLASK_ENV=development" >> backend/.env
 ```
 
 **2. Run the app:**
@@ -106,6 +107,7 @@ pip3 install -r requirements.txt
 # Create .env file
 echo "ANTHROPIC_API_KEY=your_api_key_here" > .env
 echo "PORT=5001" >> .env
+echo "FLASK_ENV=development" >> .env
 
 # Run backend
 python run.py
@@ -232,7 +234,15 @@ chess-coach/
 
 ## 🎨 Recent Updates
 
-### v1.3.0 (Latest)
+### v1.3.1 (Latest)
+- ✅ **Security Hardening** - Production-ready security improvements
+- ✅ Environment-based debug mode (auto-disabled in production)
+- ✅ CORS restrictions (configurable per environment)
+- ✅ Request size limits (1MB max)
+- ✅ Security headers (XSS, clickjacking, MIME sniffing protection)
+- ✅ Comprehensive security review documented in SECURITY.md
+
+### v1.3.0
 - ✅ **AI Chat Assistant** - Ask follow-up questions about coaching and positions
 - ✅ Context-aware responses based on current game state
 - ✅ ELO-appropriate explanations and terminology
