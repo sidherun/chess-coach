@@ -7,7 +7,8 @@ load_dotenv()
 class ClaudeCoachingService:
     def __init__(self):
         self.client = anthropic.Anthropic(api_key=os.getenv('ANTHROPIC_API_KEY'))
-        self.model = "claude-sonnet-4-20250514"
+        # Using Haiku for fast, cost-effective coaching (5-10x faster than Sonnet)
+        self.model = "claude-haiku-4-20250611"
         
     def get_coaching_feedback(self, move_san, fen, game_phase, player_elo=800, 
                               coaching_intensity="medium", move_history=None):
@@ -57,7 +58,7 @@ Keep your response conversational and encouraging. End with a specific question 
         try:
             message = self.client.messages.create(
                 model=self.model,
-                max_tokens=1024,
+                max_tokens=512,  # Reduced for faster responses (was 1024)
                 messages=[
                     {"role": "user", "content": prompt}
                 ]
@@ -168,7 +169,7 @@ Answer their question in a clear, encouraging way. Use the current game context 
         try:
             message = self.client.messages.create(
                 model=self.model,
-                max_tokens=1024,
+                max_tokens=512,  # Reduced for faster responses (was 1024)
                 messages=[
                     {"role": "user", "content": prompt}
                 ]
