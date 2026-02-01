@@ -456,18 +456,29 @@ export default function ChessBoard() {
   return (
     <div className="h-screen bg-gray-100 p-4 overflow-hidden flex flex-col">
       <div className="w-full h-full flex flex-col">
-        {/* Header with New Game button */}
+        {/* Header with New Game button and ELO */}
         <div className="flex items-center justify-between mb-4">
-          <button
-            onClick={startNewGame}
-            className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-sm font-medium shadow-md"
-          >
-            ♟️ New Game
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={startNewGame}
+              className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-sm font-medium shadow-md"
+            >
+              ♟️ New Game
+            </button>
+            <div className="flex items-center gap-2">
+              <label className="text-gray-700 text-xs font-medium">Your ELO:</label>
+              <input
+                type="number"
+                value={playerElo}
+                onChange={(e) => setPlayerElo(Number(e.target.value))}
+                className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
+              />
+            </div>
+          </div>
           <h1 className="text-2xl md:text-3xl font-bold text-gray-800 absolute left-1/2 transform -translate-x-1/2">
             Chess Coach
           </h1>
-          <div className="w-32"></div> {/* Spacer for balance */}
+          <div className="w-40"></div> {/* Spacer for balance */}
         </div>
   
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1 overflow-hidden max-w-[1600px] mx-auto w-full">
@@ -592,28 +603,17 @@ export default function ChessBoard() {
                 💡 Tip: Press <kbd className="px-1 py-0.5 bg-gray-200 border border-gray-300 rounded text-gray-700 font-mono">Ctrl+Z</kbd> (or <kbd className="px-1 py-0.5 bg-gray-200 border border-gray-300 rounded text-gray-700 font-mono">⌘Z</kbd> on Mac) to undo
               </div>
   
-              <div className="flex gap-3 text-sm">
-                <div className="flex-1">
-                  <label className="block text-gray-700 mb-1 text-xs">Your ELO</label>
-                  <input
-                    type="number"
-                    value={playerElo}
-                    onChange={(e) => setPlayerElo(Number(e.target.value))}
-                    className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
-                  />
-                </div>
-                <div className="flex-1">
-                  <label className="block text-gray-700 mb-1 text-xs">Coaching</label>
-                  <select
-                    value={coachingIntensity}
-                    onChange={(e) => setCoachingIntensity(e.target.value)}
-                    className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
-                  >
-                    <option value="low">Low</option>
-                    <option value="medium">Medium</option>
-                    <option value="high">High</option>
-                  </select>
-                </div>
+              <div className="text-sm">
+                <label className="block text-gray-700 mb-1 text-xs">Coaching Intensity</label>
+                <select
+                  value={coachingIntensity}
+                  onChange={(e) => setCoachingIntensity(e.target.value)}
+                  className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                >
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                </select>
               </div>
   
               <div className="text-xs text-gray-600">
