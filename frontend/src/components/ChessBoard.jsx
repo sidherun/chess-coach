@@ -28,6 +28,8 @@ export default function ChessBoard() {
   const [chatLoading, setChatLoading] = useState(false); // Chat API loading state
   const [feedbackHeight, setFeedbackHeight] = useState(40); // Percentage height for feedback section
   const [isDragging, setIsDragging] = useState(false); // Resize drag state
+  const [processingMove, setProcessingMove] = useState(false); // Coaching feedback processing
+  const [processingSquare, setProcessingSquare] = useState(null); // Which piece is being processed
   const inputRef = useRef(null); // Reference for the input field
   const chatEndRef = useRef(null); // Reference for auto-scrolling chat
   const rightPanelRef = useRef(null); // Reference for right panel container
@@ -88,7 +90,7 @@ export default function ChessBoard() {
   useEffect(() => {
     const handleKeyDown = (e) => {
       // Check for Ctrl+Z (Windows/Linux) or Cmd+Z (Mac)
-      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !loading) {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !loading && !processingMove) {
         e.preventDefault(); // Prevent browser undo
         undoLastMove();
       }
@@ -96,7 +98,7 @@ export default function ChessBoard() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [loading]); // Re-attach when loading state changes
+  }, [loading, processingMove]); // Re-attach when loading state changes
 
   const startNewGame = async () => {
     try {
@@ -118,7 +120,72 @@ export default function ChessBoard() {
   const makeMove = async () => {
     if (!moveInput.trim()) return;
 
-    setLoading(true);
+    // In multi-move mode, handle differently
+    if (multiMoveMode) {
+      setLoading(true);
+      try {
+        const tempGame = new Chess(game.fen());
+        const move = tempGame.move(moveInput);
+        
+        if (move) {
+          // Update board locally
+          setGame(tempGame);
+          setBoardPosition(tempGame.fen());
+          setBoardKey(Date.now());
+          setLastMoveFrom(move.from);
+          setLastMoveTo(move.to);
+          setLastMoveNotation(move.san);
+          
+          // Add to move history
+          setMoveHistory([...moveHistory, { notation: move.san, from: move.from, to: move.to }]);
+          
+          setFeedback(`Multi-move: ${moveHistory.length + 1} move${moveHistory.length + 1 !== 1 ? 's' : ''} made. Click "Get Coaching" when ready.`);
+          setMoveInput('');
+        } else {
+          setFeedback(`Invalid move: ${moveInput}\n\nTip: For captures, use format like 'exd5' or 'Nxe5'`);
+        }
+      } catch (error) {
+        setFeedback(`Invalid move: ${moveInput}\n\nTip: For captures, use format like 'exd5' or 'Nxe5'`);
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
+    // Single-move mode with improved UX
+    // 1. Validate move locally
+    // 2. Update board immediately
+    // 3. Grey out moved piece while getting coaching
+    
+    const tempGame = new Chess(game.fen());
+    let move;
+    try {
+      move = tempGame.move(moveInput);
+    } catch (error) {
+      setFeedback(`Invalid move: ${moveInput}\n\nTip: For captures, use format like 'exd5' or 'Nxe5'`);
+      return;
+    }
+    
+    if (!move) {
+      setFeedback(`Invalid move: ${moveInput}\n\nTip: For captures, use format like 'exd5' or 'Nxe5'`);
+      return;
+    }
+    
+    // Move is valid! Update board immediately
+    setGame(tempGame);
+    setBoardPosition(tempGame.fen());
+    setBoardKey(Date.now());
+    setLastMoveFrom(move.from);
+    setLastMoveTo(move.to);
+    setLastMoveNotation(move.san);
+    setMoveInput('');
+    
+    // Set processing state (grey out piece, lock board)
+    setProcessingMove(true);
+    setProcessingSquare(move.to);
+    setFeedback('🤔 Getting coaching...');
+    
+    // Fetch coaching in background
     try {
       const response = await axios.post(`${API_BASE_URL}/move`, {
         move: moveInput,
@@ -127,45 +194,30 @@ export default function ChessBoard() {
       });
 
       if (response.data.success) {
-        // Get FEN from backend
         const newFen = response.data.board_state.fen;
         
-        // Parse the move to get from/to squares
-        // The move from backend is in SAN format (e.g., "Nf3", "e4")
-        // We need to use chess.js to get the actual squares
-        const tempGame = new Chess(game.fen()); // Use current position
-        try {
-          const move = tempGame.move(moveInput); // This gives us {from, to, san}
-          if (move) {
-            setLastMoveFrom(move.from);
-            setLastMoveTo(move.to);
-            setLastMoveNotation(move.san);
-          }
-        } catch (e) {
-          console.log('Could not parse move for highlighting:', e);
-        }
-        
-        // Update game state and board position
+        // Update game state from backend (to ensure sync)
         const newGame = new Chess(newFen);
         setGame(newGame);
         setBoardPosition(newFen);
         setBoardKey(Date.now());
-        setLastMove(response.data.move); // Store the move for highlighting
         
         setFeedback(response.data.coaching_feedback);
         setGamePhase(response.data.game_phase);
-        setMoveInput('');
         
         console.log('Board updated to:', newFen);
-        console.log('Move made:', response.data.move);
+        console.log('Move made:', move.san);
       } else {
-        setFeedback(`Invalid move: ${response.data.error}\n\nTip: For captures, use format like 'exd5' or 'Nxe5'`);
+        // This shouldn't happen since we validated locally, but handle it
+        setFeedback(`Error: ${response.data.error}`);
       }
     } catch (error) {
-      console.error('Error making move:', error);
-      setFeedback('Error making move. Check the console for details.');
+      console.error('Error getting coaching:', error);
+      setFeedback('Error getting coaching. The move was made but coaching feedback failed.');
     } finally {
-      setLoading(false);
+      // Clear processing state
+      setProcessingMove(false);
+      setProcessingSquare(null);
     }
   };
 
@@ -350,6 +402,9 @@ export default function ChessBoard() {
   };
 
   const handleSquareClick = (square) => {
+    // Block interaction if move is being processed
+    if (processingMove) return;
+    
     // If no square selected, select this square (if it has a piece of current turn)
     if (!selectedSquare) {
       const piece = game.get(square);
@@ -387,12 +442,12 @@ export default function ChessBoard() {
   };
 
   const makeMoveFromBoard = async (moveNotation, fromSquare, toSquare) => {
-    setLoading(true);
     setSelectedSquare(null);
     setLegalMoves([]);
     
     // If in multi-move mode, just make the move locally
     if (multiMoveMode) {
+      setLoading(true);
       const tempGame = new Chess(game.fen());
       const move = tempGame.move(moveNotation);
       
@@ -415,7 +470,34 @@ export default function ChessBoard() {
       return;
     }
     
-    // Normal single-move mode with immediate coaching
+    // Single-move mode with improved UX:
+    // 1. Validate move locally
+    // 2. Update board immediately if valid
+    // 3. Grey out moved piece while getting coaching
+    // 4. Lock board during processing
+    
+    const tempGame = new Chess(game.fen());
+    const move = tempGame.move(moveNotation);
+    
+    if (!move) {
+      setFeedback('Invalid move. Please try again.');
+      return;
+    }
+    
+    // Move is valid! Update board immediately
+    setGame(tempGame);
+    setBoardPosition(tempGame.fen());
+    setBoardKey(Date.now());
+    setLastMoveFrom(fromSquare);
+    setLastMoveTo(toSquare);
+    setLastMoveNotation(moveNotation);
+    
+    // Set processing state (grey out piece, lock board)
+    setProcessingMove(true);
+    setProcessingSquare(toSquare);
+    setFeedback('🤔 Getting coaching...');
+    
+    // Fetch coaching in background
     try {
       const response = await axios.post(`${API_BASE_URL}/move`, {
         move: moveNotation,
@@ -426,12 +508,7 @@ export default function ChessBoard() {
       if (response.data.success) {
         const newFen = response.data.board_state.fen;
         
-        // Set the from/to squares for highlighting
-        setLastMoveFrom(fromSquare);
-        setLastMoveTo(toSquare);
-        setLastMoveNotation(moveNotation);
-        
-        // Update game state
+        // Update game state from backend (to ensure sync)
         const newGame = new Chess(newFen);
         setGame(newGame);
         setBoardPosition(newFen);
@@ -443,13 +520,16 @@ export default function ChessBoard() {
         console.log('Board updated to:', newFen);
         console.log('Move made:', moveNotation);
       } else {
-        setFeedback(`Invalid move: ${response.data.error}`);
+        // This shouldn't happen since we validated locally, but handle it
+        setFeedback(`Error: ${response.data.error}`);
       }
     } catch (error) {
-      console.error('Error making move:', error);
-      setFeedback('Error making move. Check the console for details.');
+      console.error('Error getting coaching:', error);
+      setFeedback('Error getting coaching. The move was made but coaching feedback failed.');
     } finally {
-      setLoading(false);
+      // Clear processing state
+      setProcessingMove(false);
+      setProcessingSquare(null);
     }
   };
 
@@ -523,6 +603,7 @@ export default function ChessBoard() {
                     legalMoves={legalMoves}
                     lastMoveFrom={lastMoveFrom}
                     lastMoveTo={lastMoveTo}
+                    processingSquare={processingSquare}
                   />
                   {lastMoveNotation && (
                     <div className="bg-green-100 border-2 border-green-400 px-4 py-2 rounded-lg shadow-md">
@@ -554,20 +635,20 @@ export default function ChessBoard() {
                     onKeyPress={handleKeyPress}
                     placeholder="Enter move (e.g., e4, Nf3)"
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                    disabled={loading}
+                    disabled={processingMove || loading}
                     autoFocus
                   />
                   <button
                     onClick={makeMove}
-                    disabled={loading}
+                    disabled={processingMove || loading}
                     className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 text-sm font-medium whitespace-nowrap"
                   >
-                    {loading ? 'Analyzing...' : 'Move'}
+                    {processingMove ? 'Processing...' : loading ? 'Analyzing...' : 'Move'}
                   </button>
                 </div>
                 <button
                   onClick={undoLastMove}
-                  disabled={loading}
+                  disabled={processingMove || loading}
                   className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:bg-gray-300 text-sm font-medium flex items-center justify-center gap-1"
                   title="Undo last move (Ctrl+Z or Cmd+Z)"
                 >

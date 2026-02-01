@@ -5,7 +5,7 @@ const pieceSymbols = {
   'P': '♙', 'N': '♘', 'B': '♗', 'R': '♖', 'Q': '♕', 'K': '♔'
 };
 
-export default function SimpleChessBoard({ fen, onSquareClick, selectedSquare, legalMoves, lastMoveFrom, lastMoveTo }) {
+export default function SimpleChessBoard({ fen, onSquareClick, selectedSquare, legalMoves, lastMoveFrom, lastMoveTo, processingSquare }) {
   const game = new Chess(fen);
   const board = game.board();
   
@@ -27,6 +27,7 @@ export default function SimpleChessBoard({ fen, onSquareClick, selectedSquare, l
             const isLegalMove = legalMoves?.includes(squareName);
             const isLastMoveFrom = squareName === lastMoveFrom;
             const isLastMoveTo = squareName === lastMoveTo;
+            const isProcessing = squareName === processingSquare;
             
             // Build highlight classes
             let highlightClass = '';
@@ -55,7 +56,9 @@ export default function SimpleChessBoard({ fen, onSquareClick, selectedSquare, l
                 {/* Piece */}
                 {square && (
                   <span 
-                    className="font-bold absolute z-20"
+                    className={`font-bold absolute z-20 transition-all duration-300 ${
+                      isProcessing ? 'opacity-50 animate-pulse' : ''
+                    }`}
                     style={{
                       color: square.color === 'w' ? '#ffffff' : '#000000',
                       textShadow: square.color === 'w' 
