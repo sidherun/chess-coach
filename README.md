@@ -30,7 +30,57 @@ An AI-powered chess coaching application that provides real-time feedback on you
 - Node.js 18 or higher
 - Anthropic API key ([get one here](https://console.anthropic.com/))
 
-### Installation
+### Easy Setup (Recommended)
+
+**1. Clone and setup:**
+```bash
+git clone https://github.com/sidherun/chess-coach.git
+cd chess-coach
+
+# Create .env file with your API key
+echo "ANTHROPIC_API_KEY=your_api_key_here" > backend/.env
+echo "PORT=5001" >> backend/.env
+```
+
+**2. Run the app:**
+
+**Mac/Linux:**
+```bash
+./start.sh
+```
+
+**Windows:**
+```bash
+start.bat
+```
+
+The script will automatically:
+- ✅ Create virtual environment (first run only)
+- ✅ Install all dependencies (first run only)
+- ✅ Start backend server (port 5001)
+- ✅ Start frontend dev server (port 5173)
+- ✅ Open logs for debugging
+
+**3. Open your browser:**
+```
+http://localhost:5173
+```
+
+**4. To stop servers:**
+
+**Mac/Linux:**
+```bash
+./stop.sh
+```
+
+**Windows:**
+```bash
+stop.bat
+```
+
+---
+
+### Manual Setup (Alternative)
 
 **1. Clone the repository:**
 ```bash

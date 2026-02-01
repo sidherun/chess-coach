@@ -37,3 +37,7 @@ Thumbs.db
 backend/.env
 frontend/.env
 **/.env
+
+# Startup script artifacts
+logs/
+*.pid
