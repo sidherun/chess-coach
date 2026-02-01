@@ -7,8 +7,8 @@ load_dotenv()
 class ClaudeCoachingService:
     def __init__(self):
         self.client = anthropic.Anthropic(api_key=os.getenv('ANTHROPIC_API_KEY'))
-        # Using Haiku 3.5 for fast, cost-effective coaching (5-10x faster than Sonnet)
-        self.model = "claude-3-5-haiku-20241022"
+        # Using Claude 3 Haiku for fast, cost-effective coaching
+        self.model = "claude-3-haiku-20240307"
         
     def get_coaching_feedback(self, move_san, fen, game_phase, player_elo=800, 
                               coaching_intensity="medium", move_history=None):
