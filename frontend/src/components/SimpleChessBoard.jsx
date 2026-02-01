@@ -42,7 +42,7 @@ export default function SimpleChessBoard({ fen, onSquareClick, selectedSquare, l
               <div
                 key={squareName}
                 onClick={() => onSquareClick(squareName)}
-                className={`w-16 h-16 flex items-center justify-center text-5xl ${bgColor} ${highlightClass} relative cursor-pointer hover:opacity-80 transition-opacity`}
+                className={`w-20 h-20 flex items-center justify-center text-6xl ${bgColor} ${highlightClass} relative cursor-pointer hover:opacity-80 transition-opacity`}
               >
                 {/* Legal move indicator (green dot) */}
                 {isLegalMove && !square && (

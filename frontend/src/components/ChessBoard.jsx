@@ -488,7 +488,7 @@ export default function ChessBoard() {
               {/* Board with turn indicators on sides */}
               <div className="flex items-center gap-4">
                 {/* Turn indicator - positioned next to board */}
-                <div className="flex flex-col justify-center h-[512px]">
+                <div className="flex flex-col justify-center h-[640px]">
                   {/* Black's turn indicator (top) */}
                   <div className={`mb-auto transition-all duration-300 ${
                     game.turn() === 'b' 
