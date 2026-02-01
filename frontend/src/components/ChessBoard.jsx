@@ -456,9 +456,19 @@ export default function ChessBoard() {
   return (
     <div className="h-screen bg-gray-100 p-4 overflow-hidden flex flex-col">
       <div className="w-full h-full flex flex-col">
-        <h1 className="text-2xl md:text-3xl font-bold text-center mb-4 text-gray-800">
-          Chess Coach
-        </h1>
+        {/* Header with New Game button */}
+        <div className="flex items-center justify-between mb-4">
+          <button
+            onClick={startNewGame}
+            className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-sm font-medium shadow-md"
+          >
+            ♟️ New Game
+          </button>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-800 absolute left-1/2 transform -translate-x-1/2">
+            Chess Coach
+          </h1>
+          <div className="w-32"></div> {/* Spacer for balance */}
+        </div>
   
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1 overflow-hidden max-w-[1600px] mx-auto w-full">
           {/* Left Side - Chess Board */}
@@ -522,38 +532,32 @@ export default function ChessBoard() {
             </div>
   
             <div className="space-y-2 w-full" style={{ maxWidth: 'min(90%, 500px)' }}>
+              {/* Move input and Undo side by side */}
               <div className="flex gap-2">
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={moveInput}
-                  onChange={(e) => setMoveInput(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="Enter move (e.g., e4, Nf3)"
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                  disabled={loading}
-                  autoFocus
-                />
-                <button
-                  onClick={makeMove}
-                  disabled={loading}
-                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 text-sm font-medium whitespace-nowrap"
-                >
-                  {loading ? 'Analyzing...' : 'Move'}
-                </button>
-              </div>
-              
-              <div className="flex gap-2">
-                <button
-                  onClick={startNewGame}
-                  className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-sm font-medium"
-                >
-                  New Game
-                </button>
+                <div className="flex-1 flex gap-2">
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={moveInput}
+                    onChange={(e) => setMoveInput(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder="Enter move (e.g., e4, Nf3)"
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                    disabled={loading}
+                    autoFocus
+                  />
+                  <button
+                    onClick={makeMove}
+                    disabled={loading}
+                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 text-sm font-medium whitespace-nowrap"
+                  >
+                    {loading ? 'Analyzing...' : 'Move'}
+                  </button>
+                </div>
                 <button
                   onClick={undoLastMove}
                   disabled={loading}
-                  className="flex-1 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:bg-gray-300 text-sm font-medium flex items-center justify-center gap-1"
+                  className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:bg-gray-300 text-sm font-medium flex items-center justify-center gap-1"
                   title="Undo last move (Ctrl+Z or Cmd+Z)"
                 >
                   <span>↩️</span> Undo
