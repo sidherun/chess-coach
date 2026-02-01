@@ -603,19 +603,6 @@ export default function ChessBoard() {
                 💡 Tip: Press <kbd className="px-1 py-0.5 bg-gray-200 border border-gray-300 rounded text-gray-700 font-mono">Ctrl+Z</kbd> (or <kbd className="px-1 py-0.5 bg-gray-200 border border-gray-300 rounded text-gray-700 font-mono">⌘Z</kbd> on Mac) to undo
               </div>
   
-              <div className="text-sm">
-                <label className="block text-gray-700 mb-1 text-xs">Coaching Intensity</label>
-                <select
-                  value={coachingIntensity}
-                  onChange={(e) => setCoachingIntensity(e.target.value)}
-                  className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
-                >
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                </select>
-              </div>
-  
               <div className="text-xs text-gray-600">
                 <p>Phase: <span className="font-semibold capitalize">{gamePhase}</span></p>
               </div>
@@ -629,7 +616,21 @@ export default function ChessBoard() {
               className="p-4 border-b border-gray-200 flex-shrink-0 overflow-y-auto"
               style={{ height: `${feedbackHeight}%` }}
             >
-              <h2 className="text-lg font-bold mb-2 text-gray-800">Coach's Feedback</h2>
+              <div className="flex items-center justify-between mb-2">
+                <h2 className="text-lg font-bold text-gray-800">Coach's Feedback</h2>
+                <div className="flex items-center gap-2">
+                  <label className="text-xs text-gray-600 font-medium">Coaching:</label>
+                  <select
+                    value={coachingIntensity}
+                    onChange={(e) => setCoachingIntensity(e.target.value)}
+                    className="px-2 py-1 border border-gray-300 rounded text-xs bg-white"
+                  >
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                  </select>
+                </div>
+              </div>
               <div className="prose prose-sm max-w-none">
                 {feedback ? (
                   <p className="whitespace-pre-wrap text-gray-700 text-sm leading-relaxed">{feedback}</p>
